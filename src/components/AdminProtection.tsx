@@ -1,11 +1,19 @@
 import { useAdminProtection } from "@/hooks/useAdminProtection";
-import { FunctionComponent, PropsWithChildren } from "react";
+import { useRouter } from "next/router";
+import { FunctionComponent, PropsWithChildren, useEffect } from "react";
 
 const AdminProtection: FunctionComponent<PropsWithChildren> = ({
   children,
 }) => {
-  useAdminProtection();
-  return children;
+  const router = useRouter();
+
+  useEffect(() => {
+    if (router.pathname !== "/login") {
+      useAdminProtection();
+    }
+  }, [router.pathname]);
+
+  return <>{children}</>;
 };
 
 export default AdminProtection;
