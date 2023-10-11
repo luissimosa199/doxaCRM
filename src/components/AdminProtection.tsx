@@ -1,4 +1,4 @@
-import { useAdminProtection } from "@/hooks/useAdminProtection";
+// import { useAdminProtection } from "@/hooks/useAdminProtection";
 import { useRouter } from "next/router";
 import { FunctionComponent, PropsWithChildren, useEffect } from "react";
 
@@ -9,7 +9,8 @@ const AdminProtection: FunctionComponent<PropsWithChildren> = ({
 
   useEffect(() => {
     if (router.pathname !== "/login") {
-      useAdminProtection();
+      console.log("admin check");
+      // useAdminProtection();
     }
   }, [router.pathname]);
 
