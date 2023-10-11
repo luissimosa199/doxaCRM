@@ -1,9 +1,12 @@
 import Output from "@/components/Output";
 import { ParsedObject, parseData } from "@/utils/parseData";
+import { useSession } from "next-auth/react";
 import { Inter } from "next/font/google";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { CustomSession } from "./api/auth/[...nextauth]";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -12,6 +15,17 @@ export default function Home() {
   const [inputData, setInputData] = useState<string>("");
   const [processedData, setProcessedData] = useState<ParsedObject[] | null>();
   const [dataAnalized, setDataAnalized] = useState<boolean>(false);
+
+  //
+  const { data: session } = useSession() as { data: CustomSession | null };
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!session || session?.role !== "ADMIN") {
+      router.push("/login");
+    }
+  }, [session, router]);
+  //
 
   const sendEmail = async () => {
     setLoading(true);
