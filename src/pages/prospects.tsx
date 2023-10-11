@@ -1,22 +1,10 @@
 import GlobalData from "@/components/GlobalData";
 import MainTable from "@/components/MainTable";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/router";
-import { useEffect } from "react";
-import { CustomSession } from "./api/auth/[...nextauth]";
+import { GetServerSideProps } from "next";
+import { getServerSession } from "next-auth";
+import { CustomSession, authOptions } from "./api/auth/[...nextauth]";
 
 const Prospects = () => {
-  //
-  const { data: session } = useSession() as { data: CustomSession | null };
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!session || session?.role !== "ADMIN") {
-      router.push("/login");
-    }
-  }, [session, router]);
-  //
-
   return (
     <div>
       <GlobalData />
@@ -26,3 +14,24 @@ const Prospects = () => {
 };
 
 export default Prospects;
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session: CustomSession | null = await getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
+  if (!session || session?.role !== "ADMIN") {
+    return {
+      redirect: {
+        destination: session ? "/login" : "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

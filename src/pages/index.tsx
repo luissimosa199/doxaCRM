@@ -1,12 +1,11 @@
 import Output from "@/components/Output";
 import { ParsedObject, parseData } from "@/utils/parseData";
-import { useSession } from "next-auth/react";
+import { getServerSession } from "next-auth";
 import { Inter } from "next/font/google";
-import Link from "next/link";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Swal from "sweetalert2";
-import { CustomSession } from "./api/auth/[...nextauth]";
+import { CustomSession, authOptions } from "./api/auth/[...nextauth]";
+import { GetServerSideProps } from "next";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -15,17 +14,6 @@ export default function Home() {
   const [inputData, setInputData] = useState<string>("");
   const [processedData, setProcessedData] = useState<ParsedObject[] | null>();
   const [dataAnalized, setDataAnalized] = useState<boolean>(false);
-
-  //
-  const { data: session } = useSession() as { data: CustomSession | null };
-  const router = useRouter();
-
-  useEffect(() => {
-    if (!session || session?.role !== "ADMIN") {
-      router.push("/login");
-    }
-  }, [session, router]);
-  //
 
   const sendEmail = async () => {
     setLoading(true);
@@ -39,14 +27,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify([
-        // {
-        //   name: "Luis",
-        //   email: "simosa37@gmail.com",
-        //   slug: "Medico-Slug-Prueba",
-        // },
-        ...processedData,
-      ]),
+      body: JSON.stringify(processedData),
     });
 
     const data = await response.json();
@@ -62,10 +43,14 @@ export default function Home() {
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
-      confirmButtonText: "Enviando!",
+      confirmButtonText: "Enviar",
     }).then((result) => {
       if (result.isConfirmed) {
         sendEmail();
+        Swal.fire(`${processedData?.length} Mensajes enviados`);
+        setInputData("");
+        setProcessedData(null);
+        setDataAnalized(false);
       }
     });
   };
@@ -122,3 +107,24 @@ export default function Home() {
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async (context) => {
+  const session: CustomSession | null = await getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
+  if (!session || session?.role !== "ADMIN") {
+    return {
+      redirect: {
+        destination: session ? "/login" : "/",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: {},
+  };
+};

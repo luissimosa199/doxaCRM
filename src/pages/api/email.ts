@@ -25,13 +25,14 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<ResponseData>
 ) {
-  const session = await getServerSession(req, res, authOptions) as CustomSession;
+  const session = (await getServerSession(
+    req,
+    res,
+    authOptions
+  )) as CustomSession;
 
-  if (
-    !session ||
-    !session.user
-    || session.role !== "ADMIN"
-  ) {
+  if (!session || !session.user || session.role !== "ADMIN") {
+    console.log({ session, role: session.role });
     return res.status(401).json({ message: "Unauthorized" });
   }
 
@@ -65,23 +66,19 @@ export default async function handler(
       html: emailHtml,
     };
 
-    // const newProspect = new ProspectModel({
-    //   _id: id,
-    //   name: user.name,
-    //   email: user.email,
-    //   doxado_id: user.doxado_id,
-    //   doctor: user.slug.replaceAll("-", " "),
-    //   slug: user.slug,
-    // });
+    const newProspect = new ProspectModel({
+      _id: id,
+      name: user.name,
+      email: user.email,
+      doxado_id: user.doxado_id,
+      doctor: user.slug.replaceAll("-", " "),
+      slug: user.slug,
+    });
 
-    // const saved = await newProspect.save();
+    const saved = await newProspect.save();
 
-    console.log(
-      idx + 1,
-      `enviado a ${user.email}`
-      // saved._id
-    );
-    // return sendgrid.send(options);
+    console.log(idx + 1, `enviado a ${user.email}`);
+    return sendgrid.send(options);
   });
 
   try {
