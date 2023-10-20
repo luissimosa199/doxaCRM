@@ -18,7 +18,7 @@ function Header() {
                 Envío de emails
               </Link>
               <Link
-                href="/email"
+                href="/email-paciente"
                 className="hover:text-blue-400 transition duration-200"
               >
                 Ver ejemplo de mail
